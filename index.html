@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SFTP File Checker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 20px;
+        background-color: #f9f9f9;
+      }
+
+      h2 {
+        color: #333;
+      }
+
+      .idiomaContainer {
+        display: inline-flex;
+      }
+
+      .idiomaColumn {
+        flex: auto;
+        padding: 10px;
+        text-decoration: none;
+      }
+
+      #fileType,
+      #csvSeparator,
+      #csvFileInput {
+        padding: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      button {
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #resultado {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+
+      .exito {
+        color: green;
+      }
+
+      .error {
+        color: red;
+      }
+
+      .logorappi {
+        width: 80px;
+      }
+
+      .tabla {
+        border-collapse: collapse;
+      }
+
+      #ayuda {
+        margin-top: 20px;
+        text-align: left;
+      }
+
+      body {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        grid-column-gap: 0px;
+        grid-row-gap: 0px;
+      }
+
+      .checker {
+        grid-area: 1 / 1 / 3 / 4;
+        background-color: #faefeb;
+        padding: 20px;
+        border-radius: 10px 10px 0px 0px;
+        box-shadow: 0 2px 4px hsla(0, 0%, 0%, 0.102);
+      }
+
+      .template {
+        grid-area: 1 / 4 / 6 / 6;
+        background-color: #fafafa;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .ayuda {
+        grid-area: 3 / 1 / 4 / 1;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 0px 0px 0px 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: left;
+      }
+
+      .ayuda2 {
+        grid-area: 3 / 2 / 3 / 4;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 0px 0px 0px 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: left;
+      }
+
+      .criterio {
+        width: 90%;
+      }
+
+      /* Responsiveeee */
+
+      @media screen and (max-width: 1000px) {
+        body {
+          grid-template-columns: 1fr;
+        }
+        .template {
+          display: none;
+        }
+
+        .ayuda {
+          display: none;
+          padding: 0px;
+        }
+
+        .tabla th[aria-label="Idioma"] {
+          display: none;
+        }
+
+        .ayuda2 {
+          grid-area: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="checker">
+      <img src="rappi-logo-1.png" alt="Logo Rappi" class="logorappi" />
+      <div>Idioma del sitio web:</div>
+      <div class="idiomaContainer">
+        <a href="" class="idiomaColumn">🇪🇸 Español</a>
+        <a href="" class="idiomaColumn">🇺🇸 Inglés</a>
+        <a href="" class="idiomaColumn">🇧🇷 Portuguez</a>
+      </div>
+      <h2>SFTP File Checker</h2>
+      <label for="fileType">Selecciona el tipo/formato de archivo:</label>
+      <select id="fileType">
+        <option value="csv">CSV</option>
+        <option value="txt">TXT</option>
+      </select>
+      <br />
+      <label for="csvSeparator">Selecciona el separador de CSV:</label>
+      <select id="csvSeparator">
+        <option value="comma">Coma (,)</option>
+        <option value="semicolon">Punto y Coma (;)</option>
+      </select>
+      <br />
+      <input type="file" id="csvFileInput" accept=".csv, .txt" />
+      <button onclick="validarArchivo()">Validar</button>
+      <p>
+        <a
+          href="https://drive.google.com/file/d/1th82lfHfXHagc4vZuqiFaAdDoB-JINQj/view?usp=sharing"
+          target="_blank"
+          >Aquí</a
+        >
+        puedes encontrar una plantilla ideal (duplicarla o descargarla)
+      </p>
+      <p id="resultado"></p>
+    </div>
+    <div class="template">
+      <b style="color: #ff3700">Importante</b>: el archivo de integración debe
+      tener el mismo orden y valores que esta tabla 👇🏻 <br />
+      <br />
+      <table class="tabla" border="1" bordercolor="#b3b3b3">
+        <tr>
+          <th>Parámetro</th>
+          <th>Tipo</th>
+          <th>Requerido</th>
+          <th>Descripción</th>
+        </tr>
+        <tr>
+          <td>store_id</td>
+          <td>string</td>
+          <td>✅</td>
+          <td>
+            Número de identificación de la tienda del aliado (ID por tienda)
+          </td>
+        </tr>
+        <tr>
+          <td>id</td>
+          <td>string</td>
+          <td>✅</td>
+          <td>ID del producto (SKU, PLU)</td>
+        </tr>
+        <tr>
+          <td>ean</td>
+          <td>string</td>
+          <td>✅</td>
+          <td>Código de Barras (puede ser también UPC)</td>
+        </tr>
+        <tr>
+          <td>name</td>
+          <td>string</td>
+          <td>✅</td>
+          <td>Nombre del Producto</td>
+        </tr>
+        <tr>
+          <td>description</td>
+          <td>string</td>
+          <td>✅</td>
+          <td>Descripción del Producto</td>
+        </tr>
+        <tr>
+          <td>trademark</td>
+          <td>string</td>
+          <td>✅</td>
+          <td>Marca comercial del Producto.</td>
+        </tr>
+        <tr>
+          <td>price</td>
+          <td>number</td>
+          <td>✅</td>
+          <td>
+            Precio en la moneda local. No debe llevar el signo de la moneda
+            (revisar manual para particularidades como separadores decimales)
+          </td>
+        </tr>
+        <tr>
+          <td>discount_price</td>
+          <td>number</td>
+          <td>🟡</td>
+          <td>
+            Precio con el descuento aplicado (precio final).
+            <strong>Puede estar vacío</strong>. No debe llevar el signo de la
+            moneda (revisar manual para particularidades como separadores
+            decimales)
+          </td>
+        </tr>
+        <tr>
+          <td>stock</td>
+          <td>int</td>
+          <td>✅</td>
+          <td>
+            Unidades REALES de inventario (revisar manual para particularidades)
+          </td>
+        </tr>
+        <tr>
+          <td>is_available</td>
+          <td>bool</td>
+          <td>🟡</td>
+          <td>
+            Si el producto está disponible para su compra.
+            <strong>Puede estar vacío</strong> pero si llega con valor debe ser
+            TRUE
+          </td>
+        </tr>
+        <tr>
+          <td>sale_type</td>
+          <td>string</td>
+          <td>✅</td>
+          <td>Formato de venta (Revisar página 10 del manual)</td>
+        </tr>
+        <tr>
+          <td>image</td>
+          <td>string</td>
+          <td>🟡</td>
+          <td>Imagen en formato URL. <strong>Puede estar vacío</strong></td>
+        </tr>
+      </table>
+    </div>
+    <div class="ayuda">
+      <h3>⭐ Ayuda y Recomendaciones</h3>
+      <p>
+        Aquí encontrarás manuales y enlaces de interés para avanzar exitosamente
+        con tu integración de Inventario
+      </p>
+    </div>
+    <div class="ayuda2">
+      <table class="tabla" border="1" bordercolor="#b3b3b3" style="width: 100%">
+        <tr>
+          <th>URL</th>
+          <th>Idioma</th>
+          <th>Descripción</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" target="_blank">link</a>
+          </td>
+          <td>🇪🇸 Español</td>
+          <td>Manual Intengración de Inventario SFTP</td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" target="_blank">link</a>
+          </td>
+          <td>🇪🇸 Español</td>
+          <td>Manual Intengración de Inventario API</td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" target="_blank">link</a>
+          </td>
+          <td>🇺🇸 English</td>
+          <td>SFTP Inventory Integration Manual</td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" target="_blank">link</a>
+          </td>
+          <td>🇺🇸 English</td>
+          <td>API Inventory Integration Manual</td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" target="_blank">link</a>
+          </td>
+          <td>🇧🇷 Portugués</td>
+          <td>Manual de integração de inventário SFTP</td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" target="_blank">link</a>
+          </td>
+          <td>🇧🇷 Portugués</td>
+          <td>Manual de integração de inventário da API</td>
+        </tr>
+      </table>
+    </div>
+
+    <script>
+      function validarArchivo() {
+        const fileInput = document.getElementById("csvFileInput");
+        const resultado = document.getElementById("resultado");
+        const separator = document.getElementById("csvSeparator").value;
+        const fileType = document.getElementById("fileType").value;
+
+        const file = fileInput.files[0];
+        if (!file) {
+          mostrarResultado("Por favor, seleccione un archivo.", "error");
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const contenido = e.target.result;
+
+          // Obtener las líneas del archivo CSV o TXT
+          const lineas = contenido.split("\n");
+
+          // Verificar que haya al menos dos líneas (encabezados y datos)
+          if (lineas.length < 2) {
+            mostrarResultado(
+              "Error: El formato del archivo es incorrecto. Debe contener al menos dos líneas.",
+              "error"
+            );
+            return;
+          }
+
+          // Separar la primera línea como encabezados
+          const encabezados = lineas[0].split(getSeparator(separator));
+
+          // Verificar que haya 12 encabezados
+          if (encabezados.length !== 12) {
+            mostrarResultado(
+              "Error: El formato del archivo es incorrecto. Debe tener 12 encabezados. Validar si el separador es coma (,) o punto y coma (;)",
+              "error"
+            );
+            return;
+          }
+
+          // Iterar a través de las líneas de datos (empezando desde la segunda línea)
+          for (let i = 1; i < lineas.length; i++) {
+            const columnas = lineas[i].split(getSeparator(separator));
+
+            // Verificar la cantidad de columnas
+            if (columnas.length !== 12) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": Debe haber 12 columnas. Validar si hay columnas en blanco y eliminarlas. TIP: buscarlo en en el Bloc de Notas (notepad). Recordar que si hay un sepadador (';' o ',') este nuevo campo se considerará como una columna adicional (celda) y romperá la integración. Puede encontrar ejemplos en el manual. Sección de integración ideal",
+                "error"
+              );
+              return;
+            }
+
+            // Verificar cada columna  name y descrp
+            for (let j = 0; j < columnas.length; j++) {
+              const columna = columnas[j].trim();
+
+              if (j === 3 || j === 4) {
+                // Permitir tildes en "name" y "description" y también caracteres de Brasiu (las de BR por validar). Los modificadores g e i hacen que la búsqueda sea global y no sensible a mayúsculas y minúsculas
+                if (/[^\w\sáéíóúàèìòùâêîôûãñõç.]+/gi.test(columna)) {
+                  mostrarResultado(
+                    "Error en la línea " +
+                      (i + 1) +
+                      ", columna " +
+                      (j + 1) +
+                      ": No se permiten caracteres especiales, excepto tildes, en las columnas 'name' y 'description'.",
+                    "error"
+                  );
+                  return;
+                }
+              } else if (j === 11) {
+                // Permitir URLs o celdas vacías en "image"
+                if (columna !== "" && !isValidURL(columna)) {
+                  mostrarResultado(
+                    "Error en la línea " +
+                      (i + 1) +
+                      ", columna " +
+                      (j + 1) +
+                      ": En la columna 'image', se debe proporcionar una URL válida o dejar el campo vacío.",
+                    "error"
+                  );
+                  return;
+                }
+              } else {
+                if (/[^\w\s.]+/g.test(columna)) {
+                  mostrarResultado(
+                    "Error en la línea " +
+                      (i + 1) +
+                      ", columna " +
+                      (j + 1) +
+                      ": No se permiten caracteres especiales en ninguna columna, excepto en 'name' y 'description'.",
+                    "error"
+                  );
+                  return;
+                }
+              }
+            }
+
+            const store_id = columnas[0].trim();
+            const id = columnas[1].trim();
+            const ean = columnas[2].trim();
+            const name = columnas[3].trim();
+            const description = columnas[4].trim();
+            const trademark = columnas[5].trim();
+            const price = columnas[6].trim();
+            const discount_price = columnas[7].trim(); // Campo opcional o vacío
+            const stock = columnas[8].trim();
+            const is_available = columnas[9].trim() || ""; // Campo opcional o vacío
+            const sale_type = columnas[10].trim();
+            const image = columnas[11].trim(); // Campo opcional o vacío
+
+            if (store_id === "" || id === "" || ean === "" || name === "") {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": Los campos store_id, id, ean y name son requeridos y no pueden estar vacíos.",
+                "error"
+              );
+              return;
+            }
+
+            if (!/^\d+$/.test(store_id) || parseInt(store_id) < 0) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo store_id debe contener un número entero mayor o igual a cero.",
+                "error"
+              );
+              return;
+            }
+
+            // if (!/^\d+$/.test(id) || parseInt(id) < 0) { // ESTO solo validaba números
+            //   mostrarResultado(
+            //     "Error en la línea " +
+            //       (i + 1) +
+            //       ": El campo id debe contener un número entero mayor o igual a cero.",
+            //     "error"
+            //   );
+            //   return;
+            // }
+
+            if (!/^\w+$/.test(id) || isNaN(parseInt(id)) || parseInt(id) < 0) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo id debe ser un número entero mayor o igual a cero o una cadena de texto sin espacios en blanco.",
+                "error"
+              );
+              return;
+            }
+
+            if (!/^\d+$/.test(ean) || parseInt(ean) < 0) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo EAN debe contener un número entero mayor o igual a cero.",
+                "error"
+              );
+              return;
+            }
+
+            if (
+              !/^\d+(\.\d+)?$/.test(price) ||
+              parseFloat(price) === 0 ||
+              parseFloat(price) < 0
+            ) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo price debe contener un número mayor a cero. No debe llevar el signo de la moneda (revisar manual para particularidades como separadores decimales)",
+                "error"
+              );
+              return;
+            }
+
+            if (
+              discount_price !== "" &&
+              (!/^\d+(\.\d+)?$/.test(discount_price) ||
+                parseFloat(discount_price) < 0)
+            ) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo discount_price debe contener un número mayor o igual a cero. No debe llevar el signo de la moneda (revisar manual para particularidades como separadores decimales)",
+                "error"
+              );
+              return;
+            }
+
+            if (!/^\d+$/.test(stock) || parseInt(stock) < 0) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo stock debe contener un número entero mayor o igual a cero. (revisar manual para particularidades como separadores decimales)",
+                "error"
+              );
+              return;
+            }
+
+            if (is_available.toUpperCase() !== "TRUE" && is_available !== "") {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo is_available debe ser TRUE o estar vacío.",
+                "error"
+              );
+              return;
+            }
+
+            if (
+              sale_type.toUpperCase() !== "U" &&
+              sale_type.toUpperCase() !== "WW" &&
+              sale_type.toUpperCase() !== "WB"
+            ) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": El campo sale_type debe ser U, WW o WB.",
+                "error"
+              );
+              return;
+            }
+
+            if (
+              /[,\r\n]/.test(
+                store_id +
+                  id +
+                  ean +
+                  name +
+                  description +
+                  trademark +
+                  price +
+                  discount_price +
+                  stock +
+                  is_available +
+                  sale_type +
+                  image
+              )
+            ) {
+              mostrarResultado(
+                "Error en la línea " +
+                  (i + 1) +
+                  ": No deben haber comas adicionales en los textos.",
+                "error"
+              );
+              return;
+            }
+          }
+
+          // Si ha llegado hasta aquí, el formato del archivo es correcto
+          mostrarResultado("El formato del archivo es correcto.", "exito");
+        };
+
+        reader.readAsText(file);
+      }
+
+      // Función para validar una URL
+      function isValidURL(url) {
+        try {
+          new URL(url);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      // Función para obtener el separador seleccionado
+      function getSeparator(separator) {
+        return separator === "semicolon" ? ";" : ",";
+      }
+
+      // Función para mostrar el resultado con el color especificado
+      function mostrarResultado(mensaje, clase) {
+        const resultado = document.getElementById("resultado");
+        resultado.textContent = mensaje;
+        resultado.className = clase;
+      }
+    </script>
+  </body>
+</html>
